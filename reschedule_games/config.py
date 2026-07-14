@@ -27,7 +27,11 @@ DATA_MY_TT = "260714_mytt_excerpt.txt" # myTT data file name
 DATA_MY_TT_PATH = RAW_DATA_DIR / DATA_YEAR_STR / DATA_MY_TT # myTT data file path
 
 OWN_TEAM = "TuS Berne"
-OPP_TEAM = "TTG Hamburg-Nord III" # "SC Condor Hamburg" # "SC Poppenbüttel V" 
+OPP_TEAM = [
+    "TTG Hamburg-Nord III",
+    "SC Condor Hamburg",
+    "SC Poppenbüttel V",
+]
 CONSIDER_DAYS = ["SAME"] # days of the week to consider for rescheduling, e.g., one of [Mo, Di, Mi, Do, Fr, Sa, So]. "SAME" can be used to indicate that the same day of the week as the original match should be considered.
 FIRST_DATE_TO_CONSIDER = "2026-09-01" # first date to consider for rescheduling, in YYYY-MM-DD format
 LAST_DATE_TO_CONSIDER = "2026-12-15" # last date to consider for rescheduling, in YYYY-MM-DD format
