@@ -5,4 +5,5 @@ python-dotenv
 ruff
 tqdm
 typer
+polars
 -e .
