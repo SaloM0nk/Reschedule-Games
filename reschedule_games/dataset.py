@@ -64,7 +64,7 @@ def main(
     # ----------------------------------------------
 ):
     if output_path is None:
-        output_path = PROCESSED_DATA_DIR / DATA_YEAR_STR / f"{own_team.replace(' ', '_')}_vs_{opp_team.replace(' ', '_')}_available_dates.csv"
+        output_path = PROCESSED_DATA_DIR / DATA_YEAR_STR / f"{own_team.replace(' ', '_')}_vs_{opp_team.replace(' ', '_')}_rescheduling.md"
     # ensure input and output directories exist
     if not input_path.exists():
         logger.error(f"Input path {input_path} does not exist.")
@@ -182,8 +182,30 @@ def main(
                     pl.lit(", ".join([d.strftime("%A, %d.%m.%Y") for d in opp_matches_in_week]))
                 ).otherwise(pl.col("opp_match")).alias("opp_match")
             )
-    # save the available dates to output_path
-    available_dates.write_csv(output_path)
+    # create a full textual report of the rescheduling.
+    day_names_de = {
+        "Monday": "Montag",
+        "Tuesday": "Dienstag",
+        "Wednesday": "Mittwoch",
+        "Thursday": "Donnerstag",
+        "Friday": "Freitag",
+        "Saturday": "Samstag",
+        "Sunday": "Sonntag"
+    }
+    with open(output_path, "w") as f:
+        f.write(f"# Ausweichtermine für das Match {own_team} vs {opp_team}:\n")
+        f.write(f"Es werden Daten zwischen dem {first_date_to_consider} und {last_date_to_consider} an den folgenden Wochentagen berücksichtig: {', '.join([day_names_de[day] for day in consider_days])}\n")
+        day_en = df_match.select(pl.col('date')).to_series().to_list()[0].strftime("%A")
+        day_de = day_names_de[day_en]
+        f.write(f"Ursprünglicher Termin: {df_match.select(pl.col('date')).to_series().to_list()[0].strftime(f'{day_de}, %d.%m.%Y')}\n")
+        f.write(f"Es wurden {len(available_dates)} mögliche Termine gefunden.\n\n")
+        for row in available_dates.iter_rows(named=True):
+            day_en = row["date"].strftime("%A")
+            day_de = day_names_de[day_en]
+            date_str = row["date"].strftime(f"{day_de}, %d.%m.%Y") # format date
+            own_match_str = "spielt am " + row["own_match"] if row["own_match"] != "None" else "Spielfrei"
+            opp_match_str = "spielt am " + row["opp_match"] if row["opp_match"] != "None" else "Spielfrei"
+            f.write(f"{date_str}: {own_team} {own_match_str}, {opp_team} {opp_match_str}\n")
     logger.info(f"Available dates for rescheduling saved to {output_path}.")
 
     logger.success("Processing dataset complete.")
